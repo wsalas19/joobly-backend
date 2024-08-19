@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 import jobRouter from "./src/routers/jobRouter.js";
 import authRouter from "./src/routers/authRouter.js";
-import cors from "cors";
 import resumeRouter from "./src/routers/resumeRouter.js";
 import contactRouter from "./src/routers/contactRouter.js";
+import paymentRouter from "./src/routers/paymentRouter.js";
 
 dotenv.config();
 

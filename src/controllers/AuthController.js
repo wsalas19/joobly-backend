@@ -18,6 +18,19 @@ class AuthController {
 			});
 		}
 	}
+	async getById(req, res) {
+		const { id } = req.params;
+		try {
+			const user = await Users.findById(id);
+			res.status(201).json({
+				user,
+			});
+		} catch (err) {
+			res.status(404).json({
+				message: "Could not find user",
+			});
+		}
+	}
 
 	async remove(req, res) {
 		const { id } = req.params;
@@ -50,7 +63,7 @@ class AuthController {
 			});
 			if (user) {
 				return res.status(409).json({
-					msg: "User Already Exists",
+					message: "User Already Exists",
 				});
 			}
 
@@ -81,6 +94,7 @@ class AuthController {
 					if (err) throw err;
 
 					res.status(200).json({
+						message: "Register Successful",
 						user,
 						token,
 					});
