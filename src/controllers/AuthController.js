@@ -29,7 +29,7 @@ class AuthController {
 			});
 		} catch (error) {
 			res.status(404).json({
-				statsu: "fail",
+				status: "fail",
 				message: error.message,
 			});
 		}
@@ -73,7 +73,7 @@ class AuthController {
 
 			jwt.sign(
 				payload,
-				"randomString",
+				process.env.ACCESS_TOKEN_SECRET,
 				{
 					expiresIn: "48h",
 				},
@@ -126,7 +126,27 @@ class AuthController {
 				},
 			};
 
-			jwt.sign(
+			const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+				expiresIn: 3600,
+			});
+
+			const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+				expiresIn: "1d",
+			});
+
+			res.cookie("jwt", refreshToken, {
+				httpOnly: true,
+				secure: true,
+				sameSite: "strict",
+				maxAge: 3600 * 1000,
+			});
+			return res.status(200).json({
+				message: "Login Successful",
+				token: accessToken,
+				user,
+			});
+
+			/* jwt.sign(
 				payload,
 				"randomString",
 				{
@@ -142,13 +162,32 @@ class AuthController {
 						},
 					});
 				},
-			);
+			); */
 		} catch (e) {
 			console.error(e);
 			res.status(500).json({
 				message: "Server Error",
 			});
 		}
+	}
+	async refreshToken(req, res) {
+		const { jwt: refreshToken } = req.cookies;
+		//no refresh token
+		if (!refreshToken) return res.status(400).json({ message: "No Refresh Token" });
+
+		//check user
+		const foundUser = await Users.findOne((el) => el.refreshToken === refreshToken);
+		if (!foundUser) return res.status(400).json({ message: "User not found" });
+
+		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+			if (err || foundUser.email !== decoded.email) {
+				return res.status(400).json({ message: "Refresh Token is invalid" });
+			}
+			const accessToken = jwt.sign({ email: decoded.email }, process.env.ACCESS_TOKEN_SECRET, {
+				expiresIn: "45s",
+			});
+			res.json({ token: accessToken });
+		});
 	}
 }
 

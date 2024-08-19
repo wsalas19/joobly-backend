@@ -27,7 +27,6 @@ app.use("/api", jobRouter);
 app.use("/api", authRouter);
 app.use("/api", resumeRouter);
 app.use("/api", contactRouter);
-// STRIPE
 app.use("/api", paymentRouter);
 
 async function main() {
